@@ -1,19 +1,8 @@
-# Packages you can use:
-# * Everything in Python's standard library
-# * NumPy
-# * SciPy
-# *
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
 
-def my_name():
-    # Replace this with your full name.
-    return "Wout Simoen"
-
-# Important note: throughout the assignment, cutoff 4.0 should be used; i'm not sure if this line was meant as indication to use default value for cutoff of 4.0
-# because it was already defaulted at 1.0 in the python file, here I will leave it as 1.0 and manually change it to cutoff=4.0 for the rest of the assignment as requested by the pdf.
-# The reason behind this is the example output blocks in the pdf. They do not pass a cutoff parameter, and with cutoff=4.0, the parse_network function gives the wrong output
+# Important note: throughout the code, cutoff 4.0 is used
 def parse_network(filename: str, cutoff=1.0):
     # We only want each protein once, regardless of how many times it appears in the dataset
     unique_proteins = set()
@@ -54,7 +43,7 @@ def parse_network(filename: str, cutoff=1.0):
         print("Error: the file {filename} could not be found".format(filename=filename))
         return [], set()
 
-    # now sort the set, also convert to a list because the output of protein_list should be a list as mentioned in the exercise
+    # sort the set, also convert to a list
     protein_list = sorted(list(unique_proteins))
     return protein_list, edges
 
@@ -105,7 +94,6 @@ def connected_components(laplacian) -> int:
 
     # we can now count the zero's
     # We use floating point numbers; things like 0.0000000012 can occur due to rounding errors
-    #
     num_zeros = np.sum(np.abs(eigenvalues) < 1e-10)
 
     return int(num_zeros)
@@ -139,7 +127,6 @@ def detect_cluster(protein, edges):
     # Count edges within the neighborhood
     # We need to know how many connections between the members of the neighborhood
     # edges are u, v and v, u; so we count 2 times
-    # note that in the numerator of requires 2 * |Ei| so this condition is now already fulfilled
 
     edges_in_neighborhood = 0
 
@@ -180,61 +167,29 @@ def get_all_clusters(protein_list, edges):
 # not imported as a module. You can run your functions here.
 
 if __name__ == "__main__":
-    print(my_name())
+    # Define file and parameters
+    network_file = "YeastNet.v3.txt"
+    confidence_cutoff = 4.0
 
+    print(f"--- Starting Network Analysis (Cutoff: {confidence_cutoff}) ---")
 
-    # Question 1c: Count proteins with different cutoffs
-    print("\n=== QUESTION 1c ===")
-    proteins_no_cutoff, edges_no_cutoff = parse_network("YeastNet.v3.txt", 0.0)
-    print(f"Total unique proteins (cutoff 0.0): {len(proteins_no_cutoff)}")
+    # 1. Parse the network
+    protein_list, edges = parse_network(network_file, cutoff=confidence_cutoff)
+    print(f"Total unique proteins: {len(protein_list)}")
+    print(f"Total interactions (bidirectional): {len(edges)}")
 
-    protein_list, edges = parse_network("YeastNet.v3.txt", 4.0)
-    print(f"Total unique proteins (cutoff 4.0): {len(protein_list)}")
-
-
-    # Question 2: Graph Laplacian and Connected Components
-    print("\n=== QUESTION 2 ===")
+    # 2. Laplacian & Components
     L = build_laplacian(protein_list, edges)
     num_components = connected_components(L)
-    print(f"Connected components (cutoff 4.0): {num_components}")
+    print(f"Number of connected components: {num_components}")
 
-
-    # Question 3: Cluster Detection
-    print("\n=== QUESTION 3 ===")
-
-    # 3.1 & 3.2: Test with the example network from Toledo
-    p_ex, e_ex = parse_network("example_network.tsv", 1.0) # override the default value for example network
-
-    # 3.1: get_neighborhood
-    neighborhood_E = get_neighborhood('E', e_ex)
-    print(f"3.1 - Neighborhood of E: {neighborhood_E}")
-
-    # 3.2: detect_cluster
-    coeff_D, size_D = detect_cluster("D", e_ex)
-    print(f"3.2 - Cluster D: coefficient={coeff_D}, size={size_D}")
-
-    # 3.3: Find all clusters in YeastNet
+    # 3. Cluster Detection
     all_clusters = get_all_clusters(protein_list, edges)
-    print(f"3.3 - Total clusters found: {len(all_clusters)}")
-    print("All clusters: \n", all_clusters)
+    print(f"Significant clusters found (size >= 10, coeff >= 0.75): {len(all_clusters)}")
 
-    # 3.3a: Check for PUP1 (YOR157C)
-    print("\n--- Question 3.3a: PUP1 ---")
-    target = "YOR157C"
-    found = False
-    for p, size in all_clusters:
-        if p == target:
-            print(f"{target} (PUP1) found in cluster with size {size}")
-            found = True
-            break
-    if not found:
-        print(f"{target} (PUP1) NOT found in cluster list")
-
-    
-    # Question 3.3b
-    print("\n--- Question 3.3b: Largest cluster ---")
     if all_clusters:
-        largest_protein, largest_size = all_clusters[0]
-        print(f"Center: {largest_protein}, Size: {largest_size}")
-        cluster_members = get_neighborhood(largest_protein, edges)
-        print(f"Members: {cluster_members}")
+        top_protein, top_size = all_clusters[0]
+        print(f"Largest cluster center: {top_protein} with {top_size} neighbors")
+
+    print("--- Analysis Complete ---")
+
