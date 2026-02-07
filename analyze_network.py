@@ -166,8 +166,9 @@ def get_all_clusters(protein_list, edges):
 # This magic if statement makes the code in the block only run when it is
 # not imported as a module. You can run your functions here.
 
+--- MAIN EXECUTION ---
+
 if __name__ == "__main__":
-    # Define file and parameters
     network_file = "YeastNet.v3.txt"
     confidence_cutoff = 4.0
 
@@ -187,9 +188,34 @@ if __name__ == "__main__":
     all_clusters = get_all_clusters(protein_list, edges)
     print(f"Significant clusters found (size >= 10, coeff >= 0.75): {len(all_clusters)}")
 
+    # 4. Cluster Visualization
     if all_clusters:
-        top_protein, top_size = all_clusters[0]
-        print(f"Largest cluster center: {top_protein} with {top_size} neighbors")
+        # Select the center protein of the largest cluster
+        center_protein, top_size = all_clusters[0]
+        print(f"Visualizing largest cluster center: {center_protein} with {top_size} neighbors")
+
+        # Retrieve all proteins in this cluster
+        cluster_nodes = get_neighborhood(center_protein, edges)
+
+        # Build a NetworkX graph for this specific cluster
+        G = nx.Graph()
+        for u, v in edges:
+            # Only add edges if BOTH proteins are within the cluster
+            if u in cluster_nodes and v in cluster_nodes:
+                G.add_edge(u, v)
+
+        # Drawing the graph
+        plt.figure(figsize=(10, 8))
+        nx.draw(G, with_labels=True, node_color='lightblue', 
+                edge_color='gray', node_size=800, font_size=9)
+        plt.title(f"Protein Interaction Cluster: {center_protein} (Size: {top_size})")
+        
+        # Save and show
+        plt.savefig('cluster_visualization2.svg', format='svg')
+        print("Visualization saved as 'cluster_visualization2.svg'")
+        plt.show()
+    else:
+        print("No significant clusters found to visualize.")
 
     print("--- Analysis Complete ---")
 
