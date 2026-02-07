@@ -134,7 +134,7 @@ def detect_cluster(protein, edges):
         if u in neighborhood and v in neighborhood:
             edges_in_neighborhood += 1
 
-    # calclate the clustering coefficient
+    # calculate the clustering coefficient
     possible_edges_doubled = k * (k - 1)
     clustering_coefficient = edges_in_neighborhood / possible_edges_doubled
 
@@ -166,7 +166,7 @@ def get_all_clusters(protein_list, edges):
 # This magic if statement makes the code in the block only run when it is
 # not imported as a module. You can run your functions here.
 
---- MAIN EXECUTION ---
+# --- MAIN EXECUTION ---
 
 if __name__ == "__main__":
     network_file = "YeastNet.v3.txt"
@@ -218,4 +218,5 @@ if __name__ == "__main__":
         print("No significant clusters found to visualize.")
 
     print("--- Analysis Complete ---")
+
 
